@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ARCetvel</string>
+    <string name="first_button">1</string>
+    <string name="second_button">2</string>
+    <string name="options_title_with_depth">Cihazınız derinlik destekliyor.</string>
+    <string name="depth_use_explanation">Desteklenen cihazlarda Derinlik etkinleştirildiğinde, sanal nesneler gerçek dünyaya karışarak ortama uyum sağlar.</string>
+    <string name="button_text_enable_depth">Etkinleştir</string>
+    <string name="button_text_disable_depth">Devre dışı bırak</string>
+    <string name="searching_planes">Yüzeyler aranıyor…</string>
+    <string name="waiting_taps">Nesneyi yerleştirmek için bir yüzeye dokunun.</string>
 </resources>
