@@ -456,10 +456,12 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         if (camera.trackingState != TrackingState.TRACKING) return
         val tap = activity.view.tapHelper.poll() ?: return
 
+        val firstPoint = activity.view.firstPointButton
+        val secondPoint = activity.view.secondPointButton
+
         val hitResultList = frame.hitTest(tap)
 
-        // Hits are sorted by depth. Consider only closest hit on a plane, Oriented Point, Depth Point,
-        // or Instant Placement Point.
+        // Hits are sorted by depth. Consider only closest hit on a plane, Oriented Point or Depth Point.
         val firstHitResult =
             hitResultList.firstOrNull { hit ->
                 when (val trackable = hit.trackable!!) {
@@ -477,23 +479,22 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
                 }
             }
 
-        if (firstHitResult != null) {
-            // Cap the number of objects created. This avoids overloading both the
-            // rendering system and ARCore.
-            if (wrappedAnchors.size >= 20) {
-                wrappedAnchors[0].anchor.detach()
-                wrappedAnchors.removeAt(0)
+        val anchorName = when {
+            firstPoint.isSelected -> "first_point"
+            secondPoint.isSelected -> "second_point"
+            else -> null
+        }
+
+        if (firstHitResult != null && anchorName != null) {
+            // Check if the anchor with the same name already exists, detach it if it does
+            val existingAnchor = wrappedAnchors.find { it.name == anchorName }
+            if (existingAnchor != null) {
+                existingAnchor.anchor.detach()
+                wrappedAnchors.remove(existingAnchor)
             }
 
-            // Adding an Anchor tells ARCore that it should track this position in
-            // space. This anchor is created on the Plane to place the 3D model
-            // in the correct position relative both to the world and to the plane.
-            wrappedAnchors.add(
-                WrappedAnchor(
-                    firstHitResult.createAnchor(),
-                    firstHitResult.trackable
-                )
-            )
+            // Create a new anchor and add it to the list
+            wrappedAnchors.add(WrappedAnchor(firstHitResult.createAnchor(), firstHitResult.trackable, anchorName))
 
             // For devices that support the Depth API, shows a dialog to suggest enabling
             // depth-based occlusion. This dialog needs to be spawned on the UI thread.
@@ -512,4 +513,5 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
 private data class WrappedAnchor(
     val anchor: Anchor,
     val trackable: Trackable,
+    val name: String?
 )
