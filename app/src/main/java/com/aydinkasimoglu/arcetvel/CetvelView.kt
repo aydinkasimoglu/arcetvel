@@ -2,6 +2,7 @@ package com.aydinkasimoglu.arcetvel
 
 import android.opengl.GLSurfaceView
 import android.view.View
+import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -13,6 +14,18 @@ import com.google.ar.core.Config
 class CetvelView(private val activity: MainActivity) : DefaultLifecycleObserver {
     val root: View = View.inflate(activity, R.layout.activity_main, null)
     val surfaceView: GLSurfaceView = root.findViewById(R.id.surface_view)
+    val firstPointButton: RadioButton = root.findViewById<RadioButton?>(R.id.first_point_btn).apply {
+        setOnClickListener {
+            it.isSelected = true
+            secondPointButton.isSelected = false
+        }
+    }
+    val secondPointButton: RadioButton = root.findViewById<RadioButton?>(R.id.second_point_btn).apply {
+        setOnClickListener {
+            it.isSelected = true
+            firstPointButton.isSelected = false
+        }
+    }
 
     private val session
         get() = activity.arCoreSessionHelper.session
