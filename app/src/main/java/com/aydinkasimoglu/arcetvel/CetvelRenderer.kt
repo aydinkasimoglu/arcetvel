@@ -24,6 +24,7 @@ import com.google.ar.core.Frame
 import com.google.ar.core.LightEstimate
 import com.google.ar.core.Plane
 import com.google.ar.core.Point
+import com.google.ar.core.Pose
 import com.google.ar.core.Session
 import com.google.ar.core.Trackable
 import com.google.ar.core.TrackingFailureReason
@@ -32,6 +33,8 @@ import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import java.io.IOException
 import java.nio.ByteBuffer
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /** Renders the CetvelAR application using our example Renderer. */
 class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, DefaultLifecycleObserver {
@@ -60,7 +63,6 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         const val CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES = 32
     }
 
-    lateinit var render: SampleRender
     private lateinit var planeRenderer: PlaneRenderer
     private lateinit var backgroundRenderer: BackgroundRenderer
     private lateinit var virtualSceneFramebuffer: Framebuffer
@@ -81,6 +83,8 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
     private lateinit var virtualObjectAlbedoTexture: Texture
 
     private val wrappedAnchors = mutableListOf<WrappedAnchor>()
+
+    private var distanceBetweenAnchors = ""
 
     // Environmental HDR
     private lateinit var dfgTexture: Texture
@@ -296,6 +300,10 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         // Handle one tap per frame.
         handleTap(frame, camera)
 
+        if (wrappedAnchors.size == 2) {
+            distanceBetweenAnchors = "%.4f".format(calculateDistance(wrappedAnchors[0].anchor.pose, wrappedAnchors[1].anchor.pose))
+        }
+
         // Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
         trackingStateHelper.updateKeepScreenOnFlag(camera.trackingState)
 
@@ -303,6 +311,8 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         // has placed any objects.
         val message: String? =
             when {
+                distanceBetweenAnchors.isNotEmpty() -> "MESAFE: ${distanceBetweenAnchors}m"
+
                 camera.trackingState == TrackingState.PAUSED &&
                         camera.trackingFailureReason == TrackingFailureReason.NONE ->
                     activity.getString(R.string.searching_planes)
@@ -313,8 +323,7 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
                 session.hasTrackingPlane() && wrappedAnchors.isEmpty() ->
                     activity.getString(R.string.waiting_taps)
 
-                session.hasTrackingPlane() && wrappedAnchors.isNotEmpty() -> null
-                else -> activity.getString(R.string.searching_planes)
+                else -> null
             }
         if (message == null) {
             activity.view.snackbarHelper.hide(activity)
@@ -354,7 +363,7 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         // Visualize planes.
         planeRenderer.drawPlanes(
             render,
-            session.getAllTrackables<Plane>(Plane::class.java),
+            session.getAllTrackables(Plane::class.java),
             camera.displayOrientedPose,
             projectionMatrix
         )
@@ -500,6 +509,21 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
             // depth-based occlusion. This dialog needs to be spawned on the UI thread.
             activity.runOnUiThread { activity.view.showOcclusionDialogIfNeeded() }
         }
+    }
+
+    /**
+     * Calculates the Euclidean distance between two Pose objects in 3D space.
+     *
+     * @param pose1 The first Pose object.
+     * @param pose2 The second Pose object.
+     * @return The Euclidean distance between the translation vectors of pose1 and pose2.
+     */
+    private fun calculateDistance(pose1: Pose, pose2: Pose): Float {
+        val distanceX = pose1.tx() - pose2.tx()
+        val distanceY = pose1.ty() - pose2.ty()
+        val distanceZ = pose1.tz() - pose2.tz()
+
+        return sqrt(distanceX.pow(2) + distanceY.pow(2) + distanceZ.pow(2))
     }
 
     private fun showError(errorMessage: String) =
