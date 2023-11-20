@@ -1,0 +1,6 @@
+<resources>
+    <string-array name="unit_options_array">
+        <item>Metre</item>
+        <item>İnç</item>
+    </string-array>
+</resources>

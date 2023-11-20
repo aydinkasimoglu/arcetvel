@@ -301,7 +301,13 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         handleTap(frame, camera)
 
         if (wrappedAnchors.size == 2) {
-            distanceBetweenAnchors = "%.4f".format(calculateDistance(wrappedAnchors[0].anchor.pose, wrappedAnchors[1].anchor.pose))
+            val meter = calculateDistance(wrappedAnchors[0].anchor.pose, wrappedAnchors[1].anchor.pose)
+
+            distanceBetweenAnchors = if (UnitSettingsFragment.useMetric) {
+                "%.4f".format(meter)
+            } else {
+                "%.4f".format(meter * 39.370f)
+            }
         }
 
         // Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
@@ -311,7 +317,7 @@ class CetvelRenderer(val activity: MainActivity) : SampleRender.Renderer, Defaul
         // has placed any objects.
         val message: String? =
             when {
-                distanceBetweenAnchors.isNotEmpty() -> "MESAFE: ${distanceBetweenAnchors}m"
+                distanceBetweenAnchors.isNotEmpty() -> "MESAFE: ${distanceBetweenAnchors}${if (UnitSettingsFragment.useMetric) "m" else "in"}"
 
                 camera.trackingState == TrackingState.PAUSED &&
                         camera.trackingFailureReason == TrackingFailureReason.NONE ->

@@ -8,4 +8,7 @@
     <string name="button_text_disable_depth">Devre dışı bırak</string>
     <string name="searching_planes">Yüzeyler aranıyor…</string>
     <string name="waiting_taps">Nesneyi yerleştirmek için bir yüzeye dokunun.</string>
+    <string name="settings_button">Settings button</string>
+    <string name="settings_title_with_units">Birimler</string>
+    <string name="cancel">Kapat</string>
 </resources>

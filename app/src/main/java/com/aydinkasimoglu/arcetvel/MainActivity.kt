@@ -3,6 +3,7 @@ package com.aydinkasimoglu.arcetvel
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageButton
 import android.widget.Toast
 import com.aydinkasimoglu.arcetvel.common.helpers.CameraPermissionHelper
 import com.aydinkasimoglu.arcetvel.common.helpers.DepthSettings
@@ -68,6 +69,10 @@ class MainActivity : AppCompatActivity() {
         SampleRender(view.surfaceView, renderer, assets)
 
         depthSettings.onCreate(this)
+
+        findViewById<ImageButton?>(R.id.settings_btn).setOnClickListener {
+            UnitSettingsFragment().show(supportFragmentManager, "UNITS_DIALOG")
+        }
     }
 
     // Configure the session, using Lighting Estimation, and Depth mode.
